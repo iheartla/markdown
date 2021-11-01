@@ -88,7 +88,7 @@ class FencedBlockPreprocessor(Preprocessor):
             'use_pygments'
         ]
 
-    def run(self, lines: list[str]) -> list[str]:
+    def run(self, lines: list[str], **kwargs) -> list[str]:
         """ Match and store Fenced Code Blocks in the `HtmlStash`. """
 
         # Check for dependent extensions

@@ -108,6 +108,7 @@ class Markdown:
 
         self.last_run: float = 0.0
         self.tab_length: int = kwargs.get('tab_length', 4)
+        self.path = kwargs.get('path', './')
 
         self.ESCAPED_CHARS: list[str] = [
             '\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '>', '#', '+', '-', '.', '!'
@@ -364,7 +365,7 @@ class Markdown:
         # Split into lines and run the line preprocessors.
         self.lines = source.split("\n")
         for prep in self.preprocessors:
-            self.lines = prep.run(self.lines)
+            self.lines = prep.run(self.lines, path=self.path)
 
         # Parse the high-level elements.
         root = self.parser.parseDocument(self.lines).getroot()
