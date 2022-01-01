@@ -25,6 +25,7 @@ from . import Extension
 from ..preprocessors import Preprocessor
 import re
 import logging
+import yaml
 from typing import Any
 
 log = logging.getLogger('MARKDOWN')
@@ -61,32 +62,47 @@ class MetaPreprocessor(Preprocessor):
 
     def run(self, lines: list[str], **kwargs) -> list[str]:
         """ Parse Meta-Data and store in Markdown.Meta. """
-        meta: dict[str, Any] = {}
-        key = None
-        if lines and BEGIN_RE.match(lines[0]):
-            lines.pop(0)
-        while lines:
-            line = lines.pop(0)
-            m1 = META_RE.match(line)
-            if line.strip() == '' or END_RE.match(line):
-                break  # blank line or end of YAML header - done
-            if m1:
-                key = m1.group('key').lower().strip()
-                value = m1.group('value').strip()
-                try:
-                    meta[key].append(value)
-                except KeyError:
-                    meta[key] = [value]
-            else:
-                m2 = META_MORE_RE.match(line)
-                if m2 and key:
-                    # Add another line to existing key
-                    meta[key].append(m2.group('value').strip())
-                else:
-                    lines.insert(0, line)
-                    break  # no meta data - done
-        self.md.Meta = meta
+        meta_lines, lines = self.split_by_meta_and_content(lines)
+        self.md.Meta = yaml.load("\n".join(meta_lines), Loader=yaml.FullLoader)
+        # meta = {}
+        # key = None
+        # if lines and BEGIN_RE.match(lines[0]):
+        #     lines.pop(0)
+        # while lines:
+        #     line = lines.pop(0)
+        #     m1 = META_RE.match(line)
+        #     if line.strip() == '' or END_RE.match(line):
+        #         break  # blank line or end of YAML header - done
+        #     if m1:
+        #         key = m1.group('key').lower().strip()
+        #         value = m1.group('value').strip()
+        #         try:
+        #             meta[key].append(value)
+        #         except KeyError:
+        #             meta[key] = [value]
+        #     else:
+        #         m2 = META_MORE_RE.match(line)
+        #         if m2 and key:
+        #             # Add another line to existing key
+        #             meta[key].append(m2.group('value').strip())
+        #         else:
+        #             lines.insert(0, line)
+        #             break  # no meta data - done
+        # self.md.Meta = meta
         return lines
+
+    def split_by_meta_and_content(self, lines):
+        meta_lines = []
+        if lines[0] != "---":
+            return meta_lines, lines
+        lines.pop(0)
+        for line in lines:
+            if line in ("---", "..."):
+                content_starts_at = lines.index(line) + 1
+                lines = lines[content_starts_at:]
+                break
+            meta_lines.append(line)
+        return meta_lines, lines
 
 
 def makeExtension(**kwargs):  # pragma: no cover
