@@ -63,7 +63,8 @@ class MetaPreprocessor(Preprocessor):
     def run(self, lines: list[str], **kwargs) -> list[str]:
         """ Parse Meta-Data and store in Markdown.Meta. """
         meta_lines, lines = self.split_by_meta_and_content(lines)
-        self.md.Meta = yaml.load("\n".join(meta_lines), Loader=yaml.FullLoader)
+        meta = yaml.load("\n".join(meta_lines), Loader=yaml.FullLoader)
+        self.md.Meta = meta if meta is not None else {}
         # meta = {}
         # key = None
         # if lines and BEGIN_RE.match(lines[0]):
