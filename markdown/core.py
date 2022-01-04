@@ -110,6 +110,8 @@ class Markdown:
         self.tab_length: int = kwargs.get('tab_length', 4)
         self.path = kwargs.get('path', './')
         self.parser_type = kwargs.get('parser_type', 4)
+        self.bibtex_file = kwargs.get('bibtex_file', '')
+        self.order = kwargs.get('order', 'unsorted')
 
         self.ESCAPED_CHARS: list[str] = [
             '\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '>', '#', '+', '-', '.', '!'
