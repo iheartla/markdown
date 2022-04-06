@@ -31,6 +31,8 @@ from functools import wraps, lru_cache
 from itertools import count
 from typing import TYPE_CHECKING, Generic, Iterator, NamedTuple, TypeVar, TypedDict, overload
 
+WHEEL_MODE = False
+
 if TYPE_CHECKING:  # pragma: no cover
     from markdown import Markdown
     import xml.etree.ElementTree as etree

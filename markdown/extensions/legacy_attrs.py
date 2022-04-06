@@ -31,8 +31,13 @@ years. This extension can be used to continue to render those documents correctl
 from __future__ import annotations
 
 import re
-from markdown.treeprocessors import Treeprocessor, isString
-from markdown.extensions import Extension
+from . import Extension, WHEEL_MODE
+if WHEEL_MODE:
+    from linear_algebra.markdown.treeprocessors import Treeprocessor, isString
+    from linear_algebra.markdown.extensions import Extension
+else:
+    from markdown.treeprocessors import Treeprocessor, isString
+    from markdown.extensions import Extension
 from markdown.extensions.attr_list import sanitize_name
 from typing import TYPE_CHECKING
 
