@@ -109,6 +109,11 @@ class Markdown:
         self.last_run: float = 0.0
         self.tab_length: int = kwargs.get('tab_length', 4)
         self.path = kwargs.get('path', './')
+        self.lib_py = ''
+        self.lib_cpp = ''
+        self.lib_matlab = ''
+        self.json_data = ''
+        self.json_sym = ''
         self.parser_type = kwargs.get('parser_type', 4)
         self.bibtex_file = kwargs.get('bibtex_file', '')
         self.order = kwargs.get('order', 'unsorted')
