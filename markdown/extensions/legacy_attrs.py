@@ -36,9 +36,8 @@ if WHEEL_MODE:
     from linear_algebra.markdown.treeprocessors import Treeprocessor, isString
     from linear_algebra.markdown.extensions import Extension
 else:
-    from markdown.treeprocessors import Treeprocessor, isString
-    from markdown.extensions import Extension
-from markdown.extensions.attr_list import sanitize_name
+    from ..treeprocessors import Treeprocessor, isString
+from .attr_list import sanitize_name
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover
