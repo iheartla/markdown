@@ -22,7 +22,6 @@ else:
     from ..extensions import Extension
     from ..preprocessors import Preprocessor
     from ..util import AtomicString
-import cgi
 
 
 class MathJaxPattern(Pattern):
