@@ -1,3 +1,4 @@
+import xml.etree.ElementTree as etree
 from . import Extension, WHEEL_MODE
 if WHEEL_MODE:
     from linear_algebra.markdown.extensions import Extension
@@ -5,13 +6,11 @@ if WHEEL_MODE:
     from linear_algebra.markdown.treeprocessors import Treeprocessor
     from linear_algebra.markdown.postprocessors import Postprocessor
     from linear_algebra.markdown.inlinepatterns import Pattern
-    from linear_algebra.markdown.util import etree
 else:
     from ..preprocessors import Preprocessor
     from ..treeprocessors import Treeprocessor
     from ..postprocessors import Postprocessor
     from ..inlinepatterns import Pattern
-    from ..util import etree
 
 from pybtex.database.input import bibtex
 
@@ -261,7 +260,8 @@ class CitationsExtension(Extension):
                 md.order,
             )
         md.preprocessors.register(CitationsPreprocessor(md, self.bib), 'ref_code_pre_block', 25)
-        md.inlinePatterns.add("mdx_bib", CitationsPattern(CITATION_RE, self.bib), "<reference")
+        # just before "reference" (what add(..., "<reference") gave before Python-Markdown 3.4)
+        md.inlinePatterns.register(CitationsPattern(CITATION_RE, self.bib), "mdx_bib", 175)
         md.treeprocessors.register(CitationsTreeprocessor(md, self.bib), 'ref_code_tree_block', 26)
 
 

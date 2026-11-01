@@ -34,12 +34,13 @@ class MathJaxPattern(Pattern):
         # Stored in htmlStash so it doesn't get further processed by Markdown.
         # text = cgi.escape(m.group(2) + m.group(3) + m.group(2)) # & sym
         text = m.group(2) + m.group(3) + m.group(2)
-        return self.markdown.htmlStash.store(text)
+        return self.md.htmlStash.store(text)
 
 class MathJaxExtension(Extension):
     def extendMarkdown(self, md):
         # Needs to come before escape matching because \ is pretty important in LaTeX
-        md.inlinePatterns.add('mathjax', MathJaxPattern(md), '<escape')
+        # (just before "escape", what add(..., '<escape') gave before Python-Markdown 3.4)
+        md.inlinePatterns.register(MathJaxPattern(md), 'mathjax', 185)
 
 def makeExtension(**kwargs):  # pragma: no cover
     return MathJaxExtension(**kwargs)
