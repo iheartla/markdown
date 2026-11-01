@@ -482,10 +482,16 @@ class IheartlaBlockPreprocessor(Preprocessor):
             start_index = m.end()
         text_list.append(text[start_index:len(text)])
         full_text = ''
+        self.context_modules = {}  # context -> names of the modules whose code is in its prose
         for index in range(len(text_list)):
             full_text += matched_list[index]
             text_list[index] = self.handle_raw_code(text_list[index], context_list[index])
             text_list[index] = self.handle_inline_raw_code(text_list[index], context_list[index])
+            modules = self.context_modules.setdefault(context_list[index], set())
+            for m in self.FENCED_BLOCK_RE.finditer(text_list[index]):
+                modules.add(m.group('module').split(',')[0].strip())
+            for m in self.INLINE_RE.finditer(text_list[index]):
+                modules.add(m.group('module').strip())
             text_list[index] = self.handle_raw_span_code(text_list[index], context_list[index])
             text_list[index] = self.handle_easy_span_code(text_list[index], context_list[index])
             full_text += text_list[index]
@@ -779,6 +785,14 @@ class IheartlaBlockPreprocessor(Preprocessor):
             equation_dict[context].reset_desc_dict()
         # merge description from span tags
         for context, cur_dict in span_dict.items():
+            # The prose also describes symbols of other modules whose code is in it,
+            # e.g. a block iheartla(third) in context judder
+            for module in self.context_modules.get(context, ()):
+                if module != context and module in equation_dict:
+                    for sym, desc in cur_dict.items():
+                        for cur_key in equation_dict[module].sym_list:
+                            if cur_key in (sym, "`{}`".format(sym), "`${}$`".format(sym)):
+                                equation_dict[module].desc_dict[cur_key] = desc
             if context in equation_dict:
                 for sym, desc in cur_dict.items():
                     # print("sym:{}, desc:{}".format(sym, desc))
