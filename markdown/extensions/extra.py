@@ -39,7 +39,6 @@ from __future__ import annotations
 from . import Extension
 
 extensions = [
-    'iheartla_code',
     'fenced_code',
     'footnotes',
     'attr_list',
