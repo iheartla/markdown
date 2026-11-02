@@ -331,7 +331,7 @@ class IheartlaBlockPreprocessor(Preprocessor):
                     desc = desc.replace(math.group(), r"""${}$""".format(code))
             # print("handle_span_code, desc:{}".format(desc))
             # print("found_list:{}".format(found_list))
-            found_list = list(set(found_list))
+            found_list = sorted(set(found_list))
             for sym in found_list:
                 cur_dict[sym] = m.group('code')
             text = text.replace(m.group(), """<span sym="{}" context="{}">{}</span>""".format(
