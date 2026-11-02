@@ -751,6 +751,7 @@ class IheartlaBlockPreprocessor(Preprocessor):
                         new_dict[sym] = new_dict[sym].replace(k, stashed_dict[k])
                         # print("sym:{}, k:{}".format(sym, k))
         equation_dict = self.merge_desc(equation_dict, span_dict)
+        self.share_desc_along_imports(equation_dict)
         self.process_metadata(equation_dict, context_list)
         text = self.handle_context_post(text, equation_dict)
         # print(text)
@@ -810,6 +811,29 @@ class IheartlaBlockPreprocessor(Preprocessor):
             # for k, v in equation_dict[context].desc_dict.items():
             #     print("k:{}, v:{}".format(k, v))
         return equation_dict
+
+    def share_desc_along_imports(self, equation_dict):
+        """
+        An imported symbol (E_a from anchor(q, m)) is the same symbol in the importer and in the module,
+        and so is an argument and the module's parameter it's bound to (q and anchor's first parameter).
+        Each one without a description gets the other's, along chains of imports too.
+        """
+        pairs = []  # (equation, symbol, module's equation, symbol there)
+        for equation in equation_dict.values():
+            for dep in equation.dependence:
+                module = equation_dict.get(dep.module)
+                if module is None:
+                    continue  # a module from a file or the builtin ones: no descriptions here
+                pairs += [(equation, name, module, name) for name in dep.name_list]
+                pairs += [(equation, arg, module, param) for arg, param in zip(dep.initialized_list, module.parameters)]
+        changed = True
+        while changed:
+            changed = False
+            for a, sym_a, b, sym_b in pairs:
+                for (to, sym_to, frm, sym_frm) in ((a, sym_a, b, sym_b), (b, sym_b, a, sym_a)):
+                    if not to.desc_dict.get(sym_to) and frm.desc_dict.get(sym_frm):
+                        to.desc_dict[sym_to] = frm.desc_dict[sym_frm]
+                        changed = True
 
     def handle_undescribed_syms(self,  equation_dict):
         pass
