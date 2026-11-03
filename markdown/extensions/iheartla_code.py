@@ -857,27 +857,30 @@ class IheartlaBlockPreprocessor(Preprocessor):
         elif parser_type == ParserTypeEnum.MATLAB:
             self.save_matlab(code_frame_list)
 
-    def save_cpp(self, code_frame_list):
-        lib_header = None
-        lib_content = ''
+    def lib_header(self, code_frame_list):
+        """
+        The contexts' includes, each different one once, in order (one context's may have more: autograd for
+        derivatives, a mesh library, helpers), or None without contexts
+        """
+        if not code_frame_list:
+            return None
+        includes = []
         for code_frame in code_frame_list:
-            if lib_header is None:
-                lib_header = code_frame.include
-            lib_content += code_frame.struct + '\n'
+            if code_frame.include not in includes:
+                includes.append(code_frame.include)
+        return ''.join(includes)
+
+    def save_cpp(self, code_frame_list):
+        lib_header = self.lib_header(code_frame_list)
+        lib_content = ''.join(code_frame.struct + '\n' for code_frame in code_frame_list)
         if lib_header is not None:
             self.md.lib_cpp = "#pragma once\n" + lib_header + lib_content
-            # save_to_file("#pragma once\n" + lib_header + lib_content, "{}/lib.h".format(self.md.path))
 
     def save_python(self, code_frame_list):
-        lib_header = None
-        lib_content = ''
-        for code_frame in code_frame_list:
-            if lib_header is None:
-                lib_header = code_frame.include
-            lib_content += code_frame.struct + '\n'
+        lib_header = self.lib_header(code_frame_list)
+        lib_content = ''.join(code_frame.struct + '\n' for code_frame in code_frame_list)
         if lib_header is not None:
             self.md.lib_py = lib_header + lib_content
-            # save_to_file(lib_header + lib_content, "{}/lib.py".format(self.md.path))
 
     def save_matlab(self, code_frame_list):
         lib_content = ''
