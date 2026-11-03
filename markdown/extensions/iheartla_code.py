@@ -14,10 +14,26 @@ if WHEEL_MODE:
     from linear_algebra.iheartla.la_parser.parser import compile_la_content, ParserTypeEnum
     from linear_algebra.iheartla.la_tools.la_helper import DEBUG_MODE, read_from_file, save_to_file, la_warning, la_debug, get_file_base, record
 else:
-    # the Rust compiler (WebAssembly), with the Python compiler's interface
-    from iheartla.rust_heartdown import compile_la_content
     from iheartla.la_tools.la_helper import *
     from iheartla.la_tools.la_msg import *
+
+    def compile_la_content(*args, **kwargs):
+        """
+        Compile with the compiler that HEARTDOWN_COMPILER names: "rust" (the default: the Rust compiler as
+        WebAssembly, with the Python compiler's interface) or "python". The editor has only the Rust compiler.
+        """
+        compiler = heartdown_compiler()
+        if compiler == 'rust':
+            from iheartla.rust_heartdown import compile_la_content
+        elif compiler == 'python':
+            from iheartla.la_parser.parser import compile_la_content
+        else:
+            raise ValueError("HEARTDOWN_COMPILER is {!r}, not rust or python".format(compiler))
+        return compile_la_content(*args, **kwargs)
+
+
+def heartdown_compiler():
+    return os.environ.get('HEARTDOWN_COMPILER', 'rust')
 
 cached_data = {}
 
@@ -621,7 +637,8 @@ class IheartlaBlockPreprocessor(Preprocessor):
         global cached_data
         self.md.changed_dict.clear()
         for name, block_data in file_dict.items():
-            cur_hash = hashlib.md5("{}:{}".format(name, block_data.get_content()).encode()).hexdigest()
+            # (and the compiler, which HEARTDOWN_COMPILER can change between compiles)
+            cur_hash = hashlib.md5("{}:{}:{}".format(heartdown_compiler(), name, block_data.get_content()).encode()).hexdigest()
             if cur_hash in cached_data:
                 code_dict, equation_data = cached_data[cur_hash]
                 self.md.changed_dict[name] = False
